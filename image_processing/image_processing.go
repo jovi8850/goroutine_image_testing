@@ -1,51 +1,53 @@
 package imageprocessing
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"image/jpeg"
 	"os"
+	"path/filepath"
 
 	"github.com/nfnt/resize"
 )
 
-func ReadImage(path string) image.Image {
+func ReadImage(path string) (image.Image, error) {
 	inputFile, err := os.Open(path)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer inputFile.Close()
 
-	// Decode the image
 	img, _, err := image.Decode(inputFile)
 	if err != nil {
-		fmt.Println(path)
-		panic(err)
+		return nil, err
 	}
-	return img
+	return img, nil
 }
 
-func WriteImage(path string, img image.Image) {
+func WriteImage(path string, img image.Image) error {
+	// Create directory if it doesn't exist
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
 	outputFile, err := os.Create(path)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer outputFile.Close()
 
-	// Encode the image to the new file
-	err = jpeg.Encode(outputFile, img, nil)
+	err = jpeg.Encode(outputFile, img, &jpeg.Options{Quality: 90})
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 func Grayscale(img image.Image) image.Image {
-	// Create a new grayscale image
 	bounds := img.Bounds()
 	grayImg := image.NewGray(bounds)
 
-	// Convert each pixel to grayscale
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			originalPixel := img.At(x, y)
@@ -56,9 +58,30 @@ func Grayscale(img image.Image) image.Image {
 	return grayImg
 }
 
-func Resize(img image.Image) image.Image {
-	newWidth := uint(500)
-	newHeight := uint(500)
+func Resize(img image.Image) (image.Image, error) {
+	const maxDimension uint = 500
+	bounds := img.Bounds()
+	width := uint(bounds.Dx())
+	height := uint(bounds.Dy())
+
+	// Calculate new dimensions while maintaining aspect ratio
+	var newWidth, newHeight uint
+	if width > height {
+		newWidth = maxDimension
+		newHeight = uint(float64(height) * float64(maxDimension) / float64(width))
+	} else {
+		newHeight = maxDimension
+		newWidth = uint(float64(width) * float64(maxDimension) / float64(height))
+	}
+
+	// Ensure minimum dimensions
+	if newWidth < 1 {
+		newWidth = 1
+	}
+	if newHeight < 1 {
+		newHeight = 1
+	}
+
 	resizedImg := resize.Resize(newWidth, newHeight, img, resize.Lanczos3)
-	return resizedImg
+	return resizedImg, nil
 }
