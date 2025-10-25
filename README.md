@@ -106,7 +106,7 @@ go_21_goroutines_pipeline/
 
 ### 1. Navigate to the project folder
 ```powershell
-cd "C:\Users\jpetk\Documents\_Data Science\Classes\2025 - 2026 Academic Year\MSDS 431\Module 6\go_21_goroutines_pipeline"
+cd "[file path to folder]"
 ```
 
 ### 2. Install dependencies
@@ -167,7 +167,8 @@ Measure-Command { .\imgproc.exe -concurrent=false }
 ## 🤖 GenAI Tools
 
 This README and several code refactors were AI-assisted for clarity, test design, and documentation structure.  
-All code was reviewed, debugged, and verified before submission.
+All code was reviewed, debugged, and verified before submission. 
+The repository contains the chats created in DeepSeek and ChatGPT for this assignment. 
 
 ---
 
